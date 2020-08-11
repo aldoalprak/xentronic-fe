@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import clsx from 'clsx';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
@@ -15,6 +15,7 @@ import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ShoppingCart from '@material-ui/icons/ShoppingCart';
+import {getAllCategory} from './../utils/endpoints';
 
 const drawerWidth = 240;
 
@@ -78,10 +79,20 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function Navbar() {
+export default function Navbar({handleCategoryChange}) {
   const classes = useStyles();
   const theme = useTheme();
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
+  const [categoryListState, setCategoryList] = useState([]);
+
+  useEffect(() => {
+    const getCategory = async() => {
+      const categoryList = await getAllCategory();
+      setCategoryList(categoryList)
+    }
+
+    getCategory();
+  }, []);
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -91,11 +102,16 @@ export default function Navbar() {
     setOpen(false);
   };
 
+  const handleDrawerClick = (value) => {
+    handleCategoryChange(value);
+    setOpen(false);
+  }
+
   return (
     <div className={classes.root}>
       <CssBaseline />
       <AppBar
-        position="fixed"
+        position="static"
         className={clsx(classes.appBar, {
           [classes.appBarShift]: open,
         })}
@@ -133,9 +149,11 @@ export default function Navbar() {
         </div>
         <Divider />
         <List>
-          {['Air Conditioner', 'Audio', 'Send email'].map((text, index) => (
-            <ListItem button key={text}>
-              <ListItemText primary={text} />
+          {categoryListState.map((list, index) => (
+            <ListItem button key={index} onClick={handleDrawerClick.bind(this, list.id)}>
+              <ListItemText 
+                primary={list.name} 
+              />
             </ListItem>
           ))}
         </List>
