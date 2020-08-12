@@ -1,9 +1,8 @@
 import React, {useEffect, useState} from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Navbar from './../components/Navbar';
-import Box from '@material-ui/core/Box';
-import Button from '@material-ui/core/Button';
-import {getAllProducts, getProductsByCategory} from './../utils/endpoints'
+import ProductCatalogue from './../components/ProductCatalogue';
+import {getAllProducts, getProductsByQuery} from './../utils/endpoints';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -11,9 +10,9 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function Home() {
+export default function Home({history}) {
   const classes = useStyles();
-  const [productListState, setProductList] = useState();
+  const [productListState, setProductList] = useState([]);
 
   useEffect(() => {
     const getAll = async() => {
@@ -24,33 +23,15 @@ export default function Home() {
     getAll();
   },[]);
 
-  const handleCategoryChange = async(value) => {
-    const productList = await getProductsByCategory(value);
-    console.log(productList)
-    setProductList(productList);
-  }
-
   return (
     <div className={classes.root}>
       <Navbar
-        handleCategoryChange={handleCategoryChange}
+        history={history}
       />
-      <Box 
-        justifyContent="flex-start" 
-        flexWrap="wrap" 
-        display="flex"
-        flexDirection="row"
-        bgcolor="background.paper"
-      >
-        {productListState ? productListState.map((result, index) => (
-          <Box key={index} p={5}>
-            <img src={result.image}/>
-            <p>{result.name}</p>
-            <p>{result.price}</p>
-            <Button color="primary">View</Button>
-          </Box>
-        )) : null}
-      </Box>
+      <ProductCatalogue
+        history={history}
+        productListState={productListState}
+      />
     </div>
   );
 }

@@ -16,6 +16,8 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ShoppingCart from '@material-ui/icons/ShoppingCart';
 import {getAllCategory} from './../utils/endpoints';
+import Badge from '@material-ui/core/Badge';
+import CustomModal from './CustomModal';
 
 const drawerWidth = 240;
 
@@ -79,20 +81,24 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function Navbar({handleCategoryChange}) {
+export default function Navbar({history, cartLengthState}) {
   const classes = useStyles();
   const theme = useTheme();
   const [open, setOpen] = useState(false);
   const [categoryListState, setCategoryList] = useState([]);
+  const [cartBadgeState, setCartBadge] = useState(0);
+  const [openModalState, setOpenModal] = useState(false);
 
   useEffect(() => {
     const getCategory = async() => {
       const categoryList = await getAllCategory();
       setCategoryList(categoryList)
     }
-
+    const pc=JSON.parse(window.localStorage.getItem("productsCart"));
+    const totalCart = pc ? pc.length:0
+    setCartBadge(totalCart);
     getCategory();
-  }, []);
+  }, [cartLengthState]);
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -103,11 +109,19 @@ export default function Navbar({handleCategoryChange}) {
   };
 
   const handleDrawerClick = (value) => {
-    handleCategoryChange(value);
+    history.push(`/products/category/${value}`)
     setOpen(false);
   }
 
-  return (
+  const handleCartClick = (value) => {
+    setOpenModal(true);
+  }
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  }
+
+   return (
     <div className={classes.root}>
       <CssBaseline />
       <AppBar
@@ -127,9 +141,25 @@ export default function Navbar({handleCategoryChange}) {
             <MenuIcon/>
           </IconButton>
           <Typography variant="h6" className={classes.title}>
-            Xentronic
+            <a href="/">Xentronic</a>
           </Typography>
-          <IconButton color="inherit"><ShoppingCart/></IconButton>
+          <IconButton 
+            color="inherit"
+            onClick={handleCartClick}
+          >
+            <Badge
+              badgeContent={cartBadgeState}
+              color="secondary"
+            >
+              <ShoppingCart/>
+            </Badge>
+          </IconButton>
+          <CustomModal
+            openModalState={openModalState}
+            handleCloseModal={handleCloseModal}
+            history={history}
+            cartLengthState={cartLengthState}
+          />
         </Toolbar>
       </AppBar>
       <Drawer
